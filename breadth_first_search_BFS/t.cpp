@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 
 
@@ -32,8 +33,15 @@ std::vector<std::string> BSF(const Graph& g, const std::string& start, const std
     std::vector<std::string> result;
     std::deque<std::vector<std::string>> search_deque;
     std::unordered_map<std::string, bool> visited;
+    std::unordered_map<std::string, std::string> pre;
     
     search_deque.push_back(g.at(start));
+
+    for (const auto &i : g.at(start)) {
+        if (pre.find(i) == pre.end()) {
+            pre.insert({i, start});
+        }
+    }
 
     while (search_deque.size() > 0) {
         auto node = search_deque.front();
@@ -46,9 +54,26 @@ std::vector<std::string> BSF(const Graph& g, const std::string& start, const std
             }
             if (i == end) {
                 std::cout << "found\n";
+                result.push_back(i);
+                auto p = i;
+                while (true) {
+                    auto iter = pre.find(p);
+                    if (iter == pre.end()) {
+                        break;
+                    }
+                    p = (*iter).second;
+                    result.push_back(p);
+                }
+                std::reverse(result.begin(), result.end());
+                return result;
             } else {
                 if (g.find(i) != g.end()) {
                     search_deque.push_back(g.at(i));
+                    for (const auto &j : g.at(i)) {
+                        if (pre.find(j) == pre.end()) {
+                            pre.insert({j, i});
+                        }
+                    }
                 }
             }
         }
@@ -59,5 +84,8 @@ std::vector<std::string> BSF(const Graph& g, const std::string& start, const std
 
 
 int main() {
-    BSF(data, "Jim", "Guile");
+    auto path = BSF(data, "Jim", "Guile");
+    for (const auto &i : path) {
+        std::cout << i << '\n';
+    }
 }
